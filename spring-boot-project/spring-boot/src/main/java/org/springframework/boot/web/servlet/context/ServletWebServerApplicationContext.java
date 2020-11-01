@@ -175,11 +175,26 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 	private void createWebServer() {
 		WebServer webServer = this.webServer;
 		ServletContext servletContext = getServletContext();
+
 		if (webServer == null && servletContext == null) {
+			/**
+			 * 内嵌servlet容器方式启动 jar包
+			 */
+			/**
+			 * 从容器中拿ServletWebServerFactory，返回一个数组，后面会根据工厂创建servlet容器
+			 * getWebServerFactory()：会判断数组长度
+			 */
+
 			ServletWebServerFactory factory = getWebServerFactory();
+			/**
+			 * 会创建具体的servlet容器
+			 */
 			this.webServer = factory.getWebServer(getSelfInitializer());
 		}
 		else if (servletContext != null) {
+			/**
+			 * 外部servlet容器方式启动 war包
+			 */
 			try {
 				getSelfInitializer().onStartup(servletContext);
 			}

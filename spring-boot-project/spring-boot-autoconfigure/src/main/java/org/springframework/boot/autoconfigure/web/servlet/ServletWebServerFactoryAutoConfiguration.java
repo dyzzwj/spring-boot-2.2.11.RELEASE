@@ -77,6 +77,10 @@ import org.springframework.web.filter.ForwardedHeaderFilter;
  * BeanPostProcessorsRegistrar：回调我们手动加入到容器中的WebServerFactoryCustomizer
  *  通过向容器中注册了一个WebServerFactoryCustomizerBeanPostProcessor来实现回调
  *
+ *
+ * 具体的servlet容器是在run()中的refresh()中的ServletWebServerApplicationContext.onRefresh()中创建的
+ * ServletWebServerApplicationContext：web环境的applicationContext实现
+ *
  */
 public class ServletWebServerFactoryAutoConfiguration {
 
