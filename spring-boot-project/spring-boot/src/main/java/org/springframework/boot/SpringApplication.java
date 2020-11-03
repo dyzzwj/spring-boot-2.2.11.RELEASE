@@ -268,14 +268,27 @@ public class SpringApplication {
 		this.resourceLoader = resourceLoader;
 		Assert.notNull(primarySources, "PrimarySources must not be null");
 		this.primarySources = new LinkedHashSet<>(Arrays.asList(primarySources));
+		/**
+		 * 判断当前项目类型 web? java? webflux?
+		 */
 		this.webApplicationType = WebApplicationType.deduceFromClasspath();
+		/**
+		 * 设置一些spring.factories中的监听器
+		 */
+
 		setInitializers((Collection) getSpringFactoriesInstances(ApplicationContextInitializer.class));
 		setListeners((Collection) getSpringFactoriesInstances(ApplicationListener.class));
+		/**
+		 * 推断主配置类
+		 */
 		this.mainApplicationClass = deduceMainApplicationClass();
 	}
 
 	private Class<?> deduceMainApplicationClass() {
 		try {
+			/**
+			 * 拿到方法的调用栈
+			 */
 			StackTraceElement[] stackTrace = new RuntimeException().getStackTrace();
 			for (StackTraceElement stackTraceElement : stackTrace) {
 				if ("main".equals(stackTraceElement.getMethodName())) {
@@ -1212,6 +1225,9 @@ public class SpringApplication {
 	 * @return the running {@link ApplicationContext}
 	 */
 	public static ConfigurableApplicationContext run(Class<?> primarySource, String... args) {
+		/**
+		 * primarySource:启动类
+		 */
 		return run(new Class<?>[] { primarySource }, args);
 	}
 
@@ -1223,6 +1239,9 @@ public class SpringApplication {
 	 * @return the running {@link ApplicationContext}
 	 */
 	public static ConfigurableApplicationContext run(Class<?>[] primarySources, String[] args) {
+		/**
+		 * new SpringApplication():构造方法中会判断当前应用环境 web? java? webflux? 设置一些监听器
+		 */
 		return new SpringApplication(primarySources).run(args);
 	}
 

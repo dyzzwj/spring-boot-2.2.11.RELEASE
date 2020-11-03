@@ -174,6 +174,10 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 
 	private void createWebServer() {
 		WebServer webServer = this.webServer;
+		/**
+		 * servletContext：嵌入式tomcat启动servletContext为null
+		 *                 外部tomcat启动servletContext不为null
+		 */
 		ServletContext servletContext = getServletContext();
 
 		if (webServer == null && servletContext == null) {
@@ -181,13 +185,23 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 			 * 内嵌servlet容器方式启动 jar包
 			 */
 			/**
+			 * ServletWebServerFactory：spring在ServletWebServerFactoryAutoConfiguration会自动注入(EmbeddedTomcat..)
+			 * 我们也可以进行手动注入
 			 * 从容器中拿ServletWebServerFactory，返回一个数组，后面会根据工厂创建servlet容器
-			 * getWebServerFactory()：会判断数组长度
+			 *
+			 * getWebServerFactory()：会判断数组长度，即容器里ServletWebServerFactory的个数，当且仅当只有一个时不会抛异常
 			 */
 
 			ServletWebServerFactory factory = getWebServerFactory();
 			/**
 			 * 会创建具体的servlet容器
+			 * getSelfInitializer()：拿到所有实现了ServletContextInitializer的实现类
+			 *
+			 * 如果是嵌入式tomcat，springboot就不会让tomcat去调用WebApplicationInitializer(因为嵌入式tomcat是spring创建的)
+			 * 即嵌入式tomcat一定程度上不会遵循servlet3.0规范
+			 *
+			 * springboot提供了另外一种实现方式 即实现ServletContextInitializer并加入到容器中
+			 *
 			 */
 			this.webServer = factory.getWebServer(getSelfInitializer());
 		}
