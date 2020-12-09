@@ -5,9 +5,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-
+/**
+ * spring ioc在初始化Configuration时有个顺序，会选取一个根Configuration最先加载，然后再去加载其他的Configuration
+ */
 @SpringBootApplication
 public class ZwjBootApplication extends SpringBootServletInitializer {
 
@@ -24,6 +24,7 @@ public class ZwjBootApplication extends SpringBootServletInitializer {
 	 */
 	@Override
 	protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
+		
 		return super.configure(builder).sources(ZwjBootApplication.class);
 	}
 

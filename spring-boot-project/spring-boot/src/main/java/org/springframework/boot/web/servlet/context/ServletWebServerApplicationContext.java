@@ -150,6 +150,9 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 	protected void onRefresh() {
 		super.onRefresh();
 		try {
+			/**
+			 * 用外部servlet容器 还是  创建嵌入式servlet容器
+			 */
 			createWebServer();
 		}
 		catch (Throwable ex) {
