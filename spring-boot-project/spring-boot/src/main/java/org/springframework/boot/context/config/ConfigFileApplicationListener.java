@@ -189,6 +189,7 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 	private void onApplicationEnvironmentPreparedEvent(ApplicationEnvironmentPreparedEvent event) {
 		//加载并实例化 “META-INF/spring.factories” 文件中EnvironmentPostProcessor类型的实现类
 		List<EnvironmentPostProcessor> postProcessors = loadPostProcessors();
+		// 将 ConfigFileAoolicationListener 存入 postProcessors
 		postProcessors.add(this);
 		AnnotationAwareOrderComparator.sort(postProcessors);
 		//调用EnvironmentPostProcessor.postProcessEnvironment
@@ -337,12 +338,21 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 						this.processedProfiles = new LinkedList<>();
 						this.activatedProfiles = false;
 						this.loaded = new LinkedHashMap<>();
+						/**
+						 *    通过 profile 标记不同的环境，可以通过设置 spring.profiles.active 和 spring.profiles.default。
+						 *    如果设置了 active，default 便失去了作用。如果两个都没设置。那么带有 profiles 标识的 bean 不会被创建。
+						 */
 						initializeProfiles();
 						while (!this.profiles.isEmpty()) {
 							Profile profile = this.profiles.poll();
 							if (isDefaultProfile(profile)) {
 								addProfileToEnvironment(profile.getName());
 							}
+							/**
+							 * 集合profile和配置文件路径 加载配置
+							 *  // SpringBoot 默认从 4 个位置查找 application.properties/yml 文件
+							 *     // classpath:/,classpath:/config/,file:./,file:./config/
+							 */
 							load(profile, this::getPositiveProfileFilter,
 									addToLoaded(MutablePropertySources::addLast, false));
 							this.processedProfiles.add(profile);
@@ -361,6 +371,7 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 		private void initializeProfiles() {
 			// The default profile for these purposes is represented as null. We add it
 			// first so that it is processed first and has lowest priority.
+			// 支持不添加任何 profile 注解的 bean 的加载
 			this.profiles.add(null);
 			Set<Profile> activatedViaProperty = getProfilesFromProperty(ACTIVE_PROFILES_PROPERTY);
 			Set<Profile> includedViaProperty = getProfilesFromProperty(INCLUDE_PROFILES_PROPERTY);
@@ -448,6 +459,9 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 		}
 
 		private void load(Profile profile, DocumentFilterFactory filterFactory, DocumentConsumer consumer) {
+			/**
+			 *  DEFAULT_SEARCH_LOCATIONS：加载配置文件的路径
+			 */
 			getSearchLocations().forEach((location) -> {
 				boolean isFolder = location.endsWith("/");
 				Set<String> names = isFolder ? getSearchNames() : NO_SEARCH_NAMES;
@@ -639,9 +653,11 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 
 		private Set<String> getSearchLocations() {
 			Set<String> locations = getSearchLocations(CONFIG_ADDITIONAL_LOCATION_PROPERTY);
+			//如果指定了配置文件的位置，就使用
 			if (this.environment.containsProperty(CONFIG_LOCATION_PROPERTY)) {
 				locations.addAll(getSearchLocations(CONFIG_LOCATION_PROPERTY));
 			}
+			//否则，去默认路径DEFAULT_SEARCH_LOCATIONS加载配置文件
 			else {
 				locations.addAll(
 						asResolvedSet(ConfigFileApplicationListener.this.searchLocations, DEFAULT_SEARCH_LOCATIONS));
