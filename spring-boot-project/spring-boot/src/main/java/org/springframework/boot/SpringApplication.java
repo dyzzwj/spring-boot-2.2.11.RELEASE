@@ -267,16 +267,18 @@ public class SpringApplication {
 	public SpringApplication(ResourceLoader resourceLoader, Class<?>... primarySources) {
 		this.resourceLoader = resourceLoader;
 		Assert.notNull(primarySources, "PrimarySources must not be null");
+		//run 方法传入的引导类
 		this.primarySources = new LinkedHashSet<>(Arrays.asList(primarySources));
 		/**
 		 * 判断当前项目类型 web? java? webflux?
 		 */
 		this.webApplicationType = WebApplicationType.deduceFromClasspath();
 		/**
-		 * 加载spring.factories中的监听器
+		 * 加载spring.factories中的初始化器和监听器
 		 */
-
+		// 初始化 initializers 属性
 		setInitializers((Collection) getSpringFactoriesInstances(ApplicationContextInitializer.class));
+		// 初始化监听器
 		setListeners((Collection) getSpringFactoriesInstances(ApplicationListener.class));
 		/**
 		 * 推断主配置类
@@ -314,6 +316,7 @@ public class SpringApplication {
 		 */
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
+		//应用上下文
 		ConfigurableApplicationContext context = null;
 		Collection<SpringBootExceptionReporter> exceptionReporters = new ArrayList<>();
 		/**
@@ -321,7 +324,7 @@ public class SpringApplication {
 		 */
 		configureHeadlessProperty();
 		/**
-		 * 读取spring.factories里的SpringApplicationRunListener对象
+		 * 读取spring.factories里的SpringApplicationRunListener对象并实例化  - EventPublishingRunListener
 		 */
 		SpringApplicationRunListeners listeners = getRunListeners(args);
 		/**
@@ -334,7 +337,7 @@ public class SpringApplication {
 			 */
 			ApplicationArguments applicationArguments = new DefaultApplicationArguments(args);
 			/**
-			 * 构造环境配置
+			 * 构造环境配置 加载properties和yml
 			 */
 			ConfigurableEnvironment environment = prepareEnvironment(listeners, applicationArguments);
 			/**
@@ -347,10 +350,16 @@ public class SpringApplication {
 			Banner printedBanner = printBanner(environment);
 			/**
 			 * 根据当前环境创建一个spring的ApplicationContext对象  java? servlet? react?
+			 *  servlet -> AnnotationConfigServletWebServerApplicationContext
+			 *  react -> AnnotationConfigReactiveWebServerApplicationContext
+			 *  其他 -> AnnotationConfigApplicationContext
+			 *
 			 */
 			context = createApplicationContext();
 			/**
 			 * 初始化异常打印器
+			 * 获取 META-INF/spring.factories 文件下类型为SpringBootExceptionReporter的资源实例
+			 *  FailureAnalyzers 用来报告关于启动过程中的错误
 			 */
 			exceptionReporters = getSpringFactoriesInstances(SpringBootExceptionReporter.class,
 					new Class[] { ConfigurableApplicationContext.class }, context);
@@ -381,6 +390,10 @@ public class SpringApplication {
 			 *  回调SpringApplicationRunListener.started()
 			 */
 			listeners.started(context);
+
+			/**
+			 * 来调用实现了CommandLineRunner或者ApplicationRunner接口的类的 run 方法，得以满足需要在 Spring 应用上下文完全准备完毕后，执行一些操作的场景。
+			 */
 			callRunners(context, applicationArguments);
 		}
 		catch (Throwable ex) {
@@ -414,11 +427,12 @@ public class SpringApplication {
 		configureEnvironment(environment, applicationArguments.getSourceArgs());
 		ConfigurationPropertySources.attach(environment);
 		/**
-		 * 回调SpringApplicationRunListeners.environmentPrepared()方法
+		 * 回调SpringApplicationRunListeners.environmentPrepared()方法 发布 ApplicationEnvironmentPreparedEvent 事件
 		 *
 		 *  application.yml配置文件在此处读取  YamlPropertySourceLoader  PropertiesPropertySourceLoader
 		 */
 		listeners.environmentPrepared(environment);
+		// 将 ConfigurableEnvironment 绑定到 SpringApplication 中
 		bindToSpringApplication(environment);
 		if (!this.isCustomEnvironment) {
 			environment = new EnvironmentConverter(getClassLoader()).convertEnvironmentIfNecessary(environment,
@@ -477,6 +491,10 @@ public class SpringApplication {
 		// Load the sources
 		Set<Object> sources = getAllSources();
 		Assert.notEmpty(sources, "Sources must not be empty");
+		/**
+		 * 加载 BeanDefinition
+		 * 此处 仅仅是装载SpringApplication#primarySources的资源，即启动类的资源，而不会加载其他配置源的BeanDefinition
+		 */
 		load(context, sources.toArray(new Object[0]));
 		/**
 		 * 回调SpringApplicationRunListener.contextLoaded()方法
@@ -514,8 +532,14 @@ public class SpringApplication {
 	private <T> Collection<T> getSpringFactoriesInstances(Class<T> type, Class<?>[] parameterTypes, Object... args) {
 		ClassLoader classLoader = getClassLoader();
 		// Use names and ensure unique to protect against duplicates
+		/**
+		 * 通过SpringFactoriesLoader.loadFactoryNames(type, classLoader)方法，在 META-INF/spring.factories 文件下
+		 * 查找ApplicationContextInitializer类型对应的资源名称。
+		 */
 		Set<String> names = new LinkedHashSet<>(SpringFactoriesLoader.loadFactoryNames(type, classLoader));
+		//实例化上面的资源信息（初始化器）。
 		List<T> instances = createSpringFactoriesInstances(type, parameterTypes, classLoader, args, names);
+		//对初始化器根据Ordered接口或者@Order注解进行排序。
 		AnnotationAwareOrderComparator.sort(instances);
 		return instances;
 	}
@@ -779,6 +803,10 @@ public class SpringApplication {
 		if (this.environment != null) {
 			loader.setEnvironment(this.environment);
 		}
+
+		/**
+		 * 加载bd
+		 */
 		loader.load();
 	}
 

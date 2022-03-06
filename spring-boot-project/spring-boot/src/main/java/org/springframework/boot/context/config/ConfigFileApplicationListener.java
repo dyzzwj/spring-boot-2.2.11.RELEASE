@@ -165,6 +165,11 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 
 	private int order = DEFAULT_ORDER;
 
+	/**
+	 * 监听ApplicationEnvironmentPreparedEvent事件和ApplicationPreparedEvent事件
+	 * @param eventType
+	 * @return
+	 */
 	@Override
 	public boolean supportsEventType(Class<? extends ApplicationEvent> eventType) {
 		return ApplicationEnvironmentPreparedEvent.class.isAssignableFrom(eventType)
@@ -182,9 +187,12 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 	}
 
 	private void onApplicationEnvironmentPreparedEvent(ApplicationEnvironmentPreparedEvent event) {
+		//加载并实例化 “META-INF/spring.factories” 文件中EnvironmentPostProcessor类型的实现类
 		List<EnvironmentPostProcessor> postProcessors = loadPostProcessors();
 		postProcessors.add(this);
 		AnnotationAwareOrderComparator.sort(postProcessors);
+		//调用EnvironmentPostProcessor.postProcessEnvironment
+		//ConfigFileApplicationListener当前类就是一个EnvironmentPostProcessor类型的后置处理器
 		for (EnvironmentPostProcessor postProcessor : postProcessors) {
 			postProcessor.postProcessEnvironment(event.getEnvironment(), event.getSpringApplication());
 		}
@@ -196,6 +204,7 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 
 	@Override
 	public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
+		// 将配置文件信息添加到 environment 中
 		addPropertySources(environment, application.getResourceLoader());
 	}
 
@@ -212,6 +221,7 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 	 */
 	protected void addPropertySources(ConfigurableEnvironment environment, ResourceLoader resourceLoader) {
 		RandomValuePropertySource.addToEnvironment(environment);
+		//加载配置文件 yml properties
 		new Loader(environment, resourceLoader).load();
 	}
 
@@ -459,6 +469,10 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 						+ "a directory, it must end in '/'");
 			}
 			Set<String> processed = new HashSet<>();
+			/**
+			 *  PropertiesPropertySourceLoader：解析properties文件
+			 *  YamlPropertySourceLoader：解析yml文件
+			 */
 			for (PropertySourceLoader loader : this.propertySourceLoaders) {
 				for (String fileExtension : loader.getFileExtensions()) {
 					if (processed.add(fileExtension)) {

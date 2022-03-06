@@ -62,15 +62,19 @@ public enum WebApplicationType {
 		/**
 		 * 通过类路径下是否存在某些类判断当前项目环境
 		 */
+
+		//如果仅存在 Reactive 的包，则为WebApplicationType.REACTIVE类型；
 		if (ClassUtils.isPresent(WEBFLUX_INDICATOR_CLASS, null) && !ClassUtils.isPresent(WEBMVC_INDICATOR_CLASS, null)
 				&& !ClassUtils.isPresent(JERSEY_INDICATOR_CLASS, null)) {
 			return WebApplicationType.REACTIVE;
 		}
+		//如果 Servlet 和 Reactive的包都不存在，则为WebApplicationType.NONE类型；
 		for (String className : SERVLET_INDICATOR_CLASSES) {
 			if (!ClassUtils.isPresent(className, null)) {
 				return WebApplicationType.NONE;
 			}
 		}
+		//其他情况都为WebApplicationType.SERVLET类型。
 		return WebApplicationType.SERVLET;
 	}
 

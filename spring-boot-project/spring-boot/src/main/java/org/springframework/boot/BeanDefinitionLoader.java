@@ -59,12 +59,24 @@ class BeanDefinitionLoader {
 
 	private final Object[] sources;
 
+	/**
+	 * 注解驱动实现
+	 */
 	private final AnnotatedBeanDefinitionReader annotatedReader;
 
+	/**
+	 * xml实现
+	 */
 	private final XmlBeanDefinitionReader xmlReader;
 
+	/**
+	 * groovy实现
+	 */
 	private BeanDefinitionReader groovyReader;
 
+	/**
+	 * AnnotatedBeanDefinitionReader与ClassPathBeanDefinitionScanner配合，形成AnnotationConfigApplicationContext扫描和注册配置类的基础
+	 */
 	private final ClassPathBeanDefinitionScanner scanner;
 
 	private ResourceLoader resourceLoader;

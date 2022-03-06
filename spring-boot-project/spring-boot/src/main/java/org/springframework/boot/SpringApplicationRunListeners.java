@@ -44,12 +44,18 @@ class SpringApplicationRunListeners {
 
 	void starting() {
 		for (SpringApplicationRunListener listener : this.listeners) {
+			//EventPublishingRunListener.starting：发布ApplicationStartingEvent事件
 			listener.starting();
 		}
 	}
 
 	void environmentPrepared(ConfigurableEnvironment environment) {
 		for (SpringApplicationRunListener listener : this.listeners) {
+			/**
+			 *  //EventPublishingRunListener.environmentPrepared：发布ApplicationEnvironmentPreparedEvent事件
+			 * 			//对应的监听器为ConfigFileApplicationListenerEventPublishingRunListener.environmentPrepared：发布ApplicationEnvironmentPreparedEvent事件
+			 *  对应的监听器为ConfigFileApplicationListener
+			 */
 			listener.environmentPrepared(environment);
 		}
 	}
