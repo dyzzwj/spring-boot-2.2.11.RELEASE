@@ -451,6 +451,7 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 			getSearchLocations().forEach((location) -> {
 				boolean isFolder = location.endsWith("/");
 				Set<String> names = isFolder ? getSearchNames() : NO_SEARCH_NAMES;
+				//继续
 				names.forEach((name) -> load(location, name, profile, filterFactory, consumer));
 			});
 		}

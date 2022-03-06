@@ -53,7 +53,7 @@ class SpringApplicationRunListeners {
 		for (SpringApplicationRunListener listener : this.listeners) {
 			/**
 			 *  //EventPublishingRunListener.environmentPrepared：发布ApplicationEnvironmentPreparedEvent事件
-			 * 			//对应的监听器为ConfigFileApplicationListenerEventPublishingRunListener.environmentPrepared：发布ApplicationEnvironmentPreparedEvent事件
+			 * 			//对应的监听器为ConfigFileApplicationListener
 			 *  对应的监听器为ConfigFileApplicationListener
 			 */
 			listener.environmentPrepared(environment);
