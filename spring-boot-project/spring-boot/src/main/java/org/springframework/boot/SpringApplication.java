@@ -422,7 +422,7 @@ public class SpringApplication {
 		 */
 		ConfigurableEnvironment environment = getOrCreateEnvironment();
 		/**
-		 * 配置环境
+		 * 配置环境 PropertySource和profile
 		 */
 		configureEnvironment(environment, applicationArguments.getSourceArgs());
 		ConfigurationPropertySources.attach(environment);

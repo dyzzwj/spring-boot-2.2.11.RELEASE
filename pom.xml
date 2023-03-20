@@ -8,7 +8,6 @@
 	<version>${revision}</version>
     <modules>
         <module>zwj-boot</module>
-		<module>zwj-boot</module>
 	</modules>
     <packaging>pom</packaging>
 	<name>Spring Boot Build</name>
